@@ -23,9 +23,7 @@ pub const Token = struct {
     /// location in source line
     location: u32 = 0,
 
-    pub fn format(self: Token, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: anytype) !void {
-        _ = fmt; // autofix
-        _ = options; // autofix
+    pub fn format(self: Token, comptime _: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
         return std.fmt.format(writer, "{d} {s}[{s}]", .{ self.location, @tagName(self.kind), self.value });
     }
 };
@@ -60,6 +58,22 @@ pub const Lexer = struct {
         lex.next_cursor += 1;
     }
 
+    fn readNumber(lex: *Lexer) string {
+
+        // TODO: integrate std.fmt.ParseInt
+        const pos = lex.cursor;
+
+        while (isDigit(lex.ch)) {
+            lex.readChar();
+        }
+
+        return lex.input[pos..lex.cursor];
+    }
+
+    fn isDigit(ch: u8) bool {
+        return std.ascii.isDigit(ch);
+    }
+
     pub fn nextToken(lex: *Lexer) Token {
         lex.eatWhitespace();
         var tok = Token{};
@@ -67,13 +81,20 @@ pub const Lexer = struct {
             '(', ')' => {
                 tok.kind = .Syntax;
                 tok.value = lex.currStr();
+                // explicity increment
+                lex.readChar();
+            },
+
+            '0'...'9' => {
+                tok.kind = .Integer;
+                tok.value = lex.readNumber();
             },
             0 => tok.kind = .EOF,
             else => {},
         }
-        tok.location = lex.cursor;
 
-        lex.readChar();
+        // save cursor as token location for every case
+        tok.location = lex.cursor;
 
         return tok;
     }
