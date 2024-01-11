@@ -59,15 +59,14 @@ pub const Lexer = struct {
     }
 
     fn readNumber(lex: *Lexer) string {
-
         // TODO: integrate std.fmt.ParseInt
-        const pos = lex.cursor;
+        const cur = lex.cursor;
 
         while (isDigit(lex.ch)) {
             lex.readChar();
         }
 
-        return lex.input[pos..lex.cursor];
+        return lex.input[cur..lex.cursor];
     }
 
     fn isDigit(ch: u8) bool {
@@ -89,8 +88,13 @@ pub const Lexer = struct {
                 tok.kind = .Integer;
                 tok.value = lex.readNumber();
             },
+
             0 => tok.kind = .EOF,
-            else => {},
+            else => {
+                // lets assume its identifier
+                tok.kind = .Identifier;
+                tok.value = lex.readIdentifier();
+            },
         }
 
         // save cursor as token location for every case
@@ -107,6 +111,22 @@ pub const Lexer = struct {
         while (std.ascii.isWhitespace(lex.ch)) {
             lex.readChar();
         }
+    }
+
+    /// every non-digit, non-space printable character can be used in identifiers.
+    fn isIdent(ch: u8) bool {
+        return std.ascii.isPrint(ch) and !std.ascii.isWhitespace(ch) and !std.ascii.isDigit(ch);
+    }
+
+    /// reads in an identifier and advances the lexer’s positions until it encounters a non-letter-character
+    fn readIdentifier(lex: *Lexer) string {
+        const cur = lex.cursor;
+
+        while (isIdent(lex.ch)) {
+            lex.readChar();
+        }
+
+        return lex.input[cur..lex.cursor];
     }
 };
 
