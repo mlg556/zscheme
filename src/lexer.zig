@@ -129,3 +129,30 @@ pub const Lexer = struct {
         return lex.input[cur..lex.cursor];
     }
 };
+
+// for example: (+ 13 (- 12 1)) produces the following tokens:
+// 1 Syntax[(]
+// 2 Identifier[+]
+// 5 Integer[13]
+// 7 Syntax[(]
+// 8 Identifier[-]
+// 11 Integer[12]
+// 13 Integer[1]
+// 14 Syntax[)]
+// 15 Syntax[)]
+// 16 EOF[]
+//
+// and we want to turn this into a tree like:
+
+//      |+|
+//    /     \
+// |13|     |-|
+//         /   \
+//       |12|  |1|
+
+pub const ValueKind = enum { Literal, List };
+
+pub const Value = struct { kind: ValueKind, literal: *Token, list: *Ast };
+
+// see https://github.com/codingonion/hello-algo-zig/blob/main/include/TreeNode.zig for a Tree implementation in zig.
+pub const Ast = []Value;
