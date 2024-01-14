@@ -113,9 +113,9 @@ pub const Lexer = struct {
         }
     }
 
-    /// every non-digit, non-space printable character can be used in identifiers.
+    /// every non-space printable character can be used in identifiers.
     fn isIdent(ch: u8) bool {
-        return std.ascii.isPrint(ch) and !std.ascii.isWhitespace(ch) and !std.ascii.isDigit(ch);
+        return std.ascii.isPrint(ch) and !std.ascii.isWhitespace(ch);
     }
 
     /// reads in an identifier and advances the lexer’s positions until it encounters a non-letter-character
